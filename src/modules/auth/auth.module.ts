@@ -10,6 +10,7 @@ import { LoggerModule } from 'src/common/logger/logger.module';
 import { User, UserSchema } from '../schemas';
 import { GoogleStrategy } from './strategies/googleOauth.strategy';
 import googleOauthConfig from '../../config/google-oauth.config';
+import { EmailService } from 'src/common/utils/mailing/email.service';
 
 @Module({
   imports: [
@@ -28,6 +29,6 @@ import googleOauthConfig from '../../config/google-oauth.config';
     LoggerModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy, GoogleStrategy],
+  providers: [AuthService, JwtStrategy, GoogleStrategy, EmailService],
 })
 export class AuthModule {}

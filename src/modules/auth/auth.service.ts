@@ -11,6 +11,7 @@ import { CreateUser } from './dtos';
 import { User, UserDocument } from '../schemas';
 import { JwtService } from '@nestjs/jwt';
 import { LoggerService } from 'src/common/logger/logger.service';
+import { EmailService } from 'src/common/utils/mailing/email.service';
 
 @Injectable()
 export class AuthService {
@@ -18,6 +19,7 @@ export class AuthService {
     @InjectModel(User.name)
     private readonly userModel: Model<UserDocument>,
     private readonly jwtService: JwtService,
+    private readonly emailService: EmailService,
     private readonly logger: LoggerService,
   ) {
     this.logger.setContext(AuthService.name);
@@ -46,6 +48,22 @@ export class AuthService {
         });
         await newUser.save({ session });
       });
+
+      if (!isOAuth) {
+        try {
+          await this.emailService.sendUserWelcomeEmail(
+            createDto.email,
+            createDto.firstName,
+          );
+          this.logger.log(`Welcome email sent to ${createDto.email}`);
+        } catch (emailError) {
+          // Log error but don't fail registration if email fails
+          this.logger.error(
+            `Failed to send welcome email to ${createDto.email}`,
+            emailError,
+          );
+        }
+      }
 
       return newUser.toObject();
     } catch (error) {
