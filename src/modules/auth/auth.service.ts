@@ -30,12 +30,18 @@ export class AuthService {
 
     let existing;
     let newUser;
+    let isNewUser = false;
 
     try {
       existing = await this.userModel.findOne({ email: createDto.email });
       if (existing) {
+        if (isOAuth) {
+          return existing.toObject();
+        }
         throw new ConflictException('Email already in use');
       }
+
+      isNewUser = true;
 
       await session.withTransaction(async () => {
         const hashedPassword = isOAuth
@@ -49,21 +55,21 @@ export class AuthService {
         await newUser.save({ session });
       });
 
-      if (!isOAuth) {
-        try {
-          await this.emailService.sendUserWelcomeEmail(
-            createDto.email,
-            createDto.firstName,
-          );
-          this.logger.log(`Welcome email sent to ${createDto.email}`);
-        } catch (emailError) {
-          // Log error but don't fail registration if email fails
-          this.logger.error(
-            `Failed to send welcome email to ${createDto.email}`,
-            emailError,
-          );
-        }
+      // if (!isOAuth) {
+      try {
+        await this.emailService.sendUserWelcomeEmail(
+          createDto.email,
+          createDto.firstName,
+        );
+        this.logger.log(`Welcome email sent to ${createDto.email}`);
+      } catch (emailError) {
+        // Log error but don't fail registration if email fails
+        this.logger.error(
+          `Failed to send welcome email to ${createDto.email}`,
+          emailError,
+        );
       }
+      // }
 
       return newUser.toObject();
     } catch (error) {

@@ -1,0 +1,152 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Welcome to Kujua360</title>
+    <style>
+      /* Resets for Outlook and compatibility */
+      body {
+        margin: 0;
+        padding: 0;
+        width: 100% !important;
+        -webkit-text-size-adjust: 100%;
+        -ms-text-size-adjust: 100%;
+      }
+      table {
+        border-spacing: 0;
+        border-collapse: collapse;
+      }
+      img {
+        border: 0;
+        outline: none;
+        text-decoration: none;
+        -ms-interpolation-mode: bicubic;
+      }
+
+      /* Mobile Responsiveness */
+      @media screen and (max-width: 600px) {
+        .container {
+          width: 100% !important;
+        }
+        .content-padding {
+          padding: 20px !important;
+        }
+      }
+    </style>
+  </head>
+  <body
+    style="
+      background-color: #f4f4f4;
+      font-family: Arial, sans-serif;
+      color: #333333;
+    "
+  >
+    <div style="display: none; max-height: 0px; overflow: hidden">
+      Welcome to Kujua360 - Start your learning journey today!
+    </div>
+
+    <table
+      width="100%"
+      cellpadding="0"
+      cellspacing="0"
+      border="0"
+      style="background-color: #f4f4f4; padding: 20px 0"
+    >
+      <tr>
+        <td align="center">
+          <table
+            class="container"
+            width="600"
+            cellpadding="0"
+            cellspacing="0"
+            border="0"
+            style="
+              background-color: #ffffff;
+              border-radius: 8px;
+              overflow: hidden;
+              box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            "
+          >
+            <tr>
+              <td height="8" style="background-color: #d00000"></td>
+            </tr>
+
+            <tr>
+              <td align="center" style="padding: 40px 0 20px 0">
+                <img
+                  src="https://prideafrica.org/kujua360/logo.png"
+                  alt="Kujua Logo"
+                  width="150"
+                  style="display: block"
+                />
+              </td>
+            </tr>
+
+            <tr>
+              <td
+                class="content-padding"
+                style="padding: 0 40px 40px 40px; text-align: center"
+              >
+                <h1
+                  style="color: #333333; font-size: 24px; margin-bottom: 20px"
+                >
+                  Welcome to Kujua360!
+                </h1>
+
+                <p
+                  style="
+                    font-size: 16px;
+                    line-height: 24px;
+                    color: #555555;
+                    margin-bottom: 30px;
+                  "
+                >
+                  Hi <strong>{{USER_NAME}}</strong>,<br /><br />
+                  Thank you for joining Kujua360. We are excited to have you on
+                  board! Your account has been successfully created, and you can
+                  now log in to access your dashboard and start your learning
+                  journey.
+                </p>
+
+                <p
+                  style="
+                    font-size: 16px;
+                    line-height: 24px;
+                    color: #555555;
+                    margin-bottom: 30px;
+                  "
+                >
+                  If you have any questions or need assistance, feel free to
+                  reach out to our support team.
+                </p>
+
+                <p style="font-size: 16px; line-height: 24px; color: #555555">
+                  Best regards,<br />
+                  <strong>The Kujua360 Team</strong>
+                </p>
+              </td>
+            </tr>
+
+            <tr>
+              <td
+                style="
+                  background-color: #333333;
+                  padding: 20px;
+                  text-align: center;
+                  color: #ffffff;
+                  font-size: 12px;
+                "
+              >
+                <p style="margin: 0">
+                  &copy; {{CURRENT_YEAR}} Kujua360. All rights reserved.<br />Powered
+                  by African Alliance + COPPER
+                </p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
