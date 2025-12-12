@@ -5,6 +5,7 @@ import { LoggerModule } from './common/logger/logger.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AuthModule } from './modules/auth/auth.module';
+import { ProgressModule } from './modules/dashboard/progress/progress.module';
 
 @Module({
   imports: [
@@ -26,7 +27,8 @@ import { AuthModule } from './modules/auth/auth.module';
       inject: [ConfigService],
     }),
     LoggerModule,
-    AuthModule
+    AuthModule,
+    ProgressModule,
   ],
   controllers: [AppController],
   providers: [AppService],

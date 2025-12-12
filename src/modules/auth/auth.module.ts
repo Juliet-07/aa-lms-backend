@@ -11,6 +11,8 @@ import { User, UserSchema } from '../schemas';
 import { GoogleStrategy } from './strategies/googleOauth.strategy';
 import googleOauthConfig from '../../config/google-oauth.config';
 import { EmailService } from 'src/common/utils/mailing/email.service';
+import { ProgressModule } from '../dashboard/progress/progress.module';
+import { ProgressService } from '../dashboard/progress/progress.service';
 
 @Module({
   imports: [
@@ -26,9 +28,16 @@ import { EmailService } from 'src/common/utils/mailing/email.service';
       inject: [ConfigService],
     }),
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
+    ProgressModule,
     LoggerModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy, GoogleStrategy, EmailService],
+  providers: [
+    AuthService,
+    JwtStrategy,
+    GoogleStrategy,
+    EmailService,
+    ProgressService,
+  ],
 })
 export class AuthModule {}

@@ -8,7 +8,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { ClientSession, Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
 import { CreateUser } from './dtos';
-import { User, UserDocument } from '../schemas';
+import { User, UserDocument, Progress, ProgressDocument } from '../schemas';
 import { JwtService } from '@nestjs/jwt';
 import { LoggerService } from 'src/common/logger/logger.service';
 import { EmailService } from 'src/common/utils/mailing/email.service';
@@ -18,6 +18,8 @@ export class AuthService {
   constructor(
     @InjectModel(User.name)
     private readonly userModel: Model<UserDocument>,
+    @InjectModel(Progress.name)
+    private readonly progressModel: Model<ProgressDocument>,
     private readonly jwtService: JwtService,
     private readonly emailService: EmailService,
     private readonly logger: LoggerService,
@@ -121,6 +123,17 @@ export class AuthService {
       throw new UnauthorizedException('User not found');
     }
 
-    return user;
+    const progress = await this.progressModel.findOne({ userId }).lean();
+    return {
+      ...user,
+      hasStartedCourse: progress ? !!progress.courseStartedAt : false,
+      progressSummary: progress
+        ? {
+            overallProgress: progress.overallProgress,
+            completedModules: progress.completedModules,
+            currentModuleId: progress.currentModuleId,
+          }
+        : null,
+    };
   }
 }
