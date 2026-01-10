@@ -56,4 +56,30 @@ export class ProgressController {
       body.completed,
     );
   }
+
+  @Post('module/:moduleId/assessment')
+  async submitAssessment(
+    @CurrentUser() user: User,
+    @Param('moduleId') moduleId: string,
+    @Body()
+    body: {
+      score: number;
+      totalQuestions: number;
+      correctAnswers: number;
+    },
+  ) {
+    return this.progressService.submitAssessment(
+      user._id.toString(),
+      Number(moduleId),
+      body.score,
+      body.totalQuestions,
+      body.correctAnswers,
+    );
+  }
+
+  // NEW: Get certificate
+  @Get('certificate')
+  async getCertificate(@CurrentUser() user: User) {
+    return this.progressService.getCertificate(user._id.toString());
+  }
 }

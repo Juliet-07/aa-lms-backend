@@ -31,6 +31,18 @@ export class Progress {
   @Prop({ type: Date, default: null })
   lastAccessedAt: Date;
 
+  @Prop({ type: Number, default: 0, min: 0, max: 100 })
+  averageScore: number;
+
+  @Prop({ type: Boolean, default: false })
+  certificateEarned: boolean;
+
+  @Prop({ type: Date, default: null })
+  certificateIssuedAt: Date;
+
+  @Prop({ type: String, default: null })
+  certificateId: string;
+
   @Prop({
     type: [
       {
@@ -44,6 +56,10 @@ export class Progress {
         progress: { type: Number, default: 0, min: 0, max: 100 },
         startedAt: { type: Date, default: null },
         completedAt: { type: Date, default: null },
+        assessmentScore: { type: Number, default: null, min: 0, max: 100 },
+        assessmentPassed: { type: Boolean, default: false },
+        assessmentAttempts: { type: Number, default: 0 },
+        lastAssessmentDate: { type: Date, default: null },
         parts: [
           {
             partId: { type: Number, required: true },
@@ -63,6 +79,10 @@ export class Progress {
     progress: number;
     startedAt: Date;
     completedAt: Date;
+    assessmentScore: number;
+    assessmentPassed: boolean;
+    assessmentAttempts: number;
+    lastAssessmentDate: Date;
     parts: Array<{
       partId: number;
       title: string;

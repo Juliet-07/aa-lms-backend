@@ -1,13 +1,19 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { Progress, ProgressDocument } from '../../schemas';
+import { Progress, ProgressDocument, User, UserDocument } from '../../schemas';
 
 @Injectable()
 export class ProgressService {
   constructor(
     @InjectModel(Progress.name)
     private readonly progressModel: Model<ProgressDocument>,
+    @InjectModel(User.name)
+    private readonly userModel: Model<UserDocument>,
   ) {}
 
   private readonly moduleDefinitions = [
@@ -53,6 +59,10 @@ export class ProgressService {
         progress: 0,
         startedAt: null,
         completedAt: null,
+        assessmentScore: null,
+        assessmentPassed: false,
+        assessmentAttempts: 0,
+        lastAssessmentDate: null,
         parts: Array.from({ length: mod.parts }, (_, i) => ({
           partId: i + 1,
           title: `Part ${i + 1}`,
@@ -69,6 +79,10 @@ export class ProgressService {
         currentModuleId: 1,
         courseStartedAt: new Date(),
         lastAccessedAt: new Date(),
+        averageScore: 0,
+        certificateEarned: false,
+        certificateIssuedAt: null,
+        certificateId: null,
         modules,
       });
     }
@@ -88,6 +102,10 @@ export class ProgressService {
         progress: 0,
         startedAt: index === 0 ? new Date() : null,
         completedAt: null,
+        assessmentScore: null,
+        assessmentPassed: false,
+        assessmentAttempts: 0,
+        lastAssessmentDate: null,
         parts: Array.from({ length: mod.parts }, (_, i) => ({
           partId: i + 1,
           title: `Part ${i + 1}`,
@@ -104,6 +122,10 @@ export class ProgressService {
         currentModuleId: 1,
         courseStartedAt: new Date(),
         lastAccessedAt: new Date(),
+        averageScore: 0,
+        certificateEarned: false,
+        certificateIssuedAt: null,
+        certificateId: null,
         modules,
       });
     } else if (!progress.courseStartedAt) {
@@ -213,6 +235,169 @@ export class ProgressService {
 
     await userProgress.save();
     return userProgress.toObject();
+  }
+
+  // NEW: Submit assessment
+  async submitAssessment(
+    userId: string,
+    moduleId: number,
+    score: number,
+    totalQuestions: number,
+    correctAnswers: number,
+  ): Promise<Progress> {
+    const userProgress = await this.progressModel.findOne({ userId });
+
+    if (!userProgress) {
+      throw new NotFoundException('Progress record not found');
+    }
+
+    const moduleIndex = userProgress.modules.findIndex(
+      (m) => m.moduleId === moduleId,
+    );
+
+    if (moduleIndex === -1) {
+      throw new NotFoundException('Module not found');
+    }
+
+    const module = userProgress.modules[moduleIndex];
+
+    // Check if all parts are completed (100% progress)
+    if (module.progress < 100) {
+      throw new BadRequestException(
+        'Please complete all module content before taking the assessment',
+      );
+    }
+
+    const passingScore = 70;
+    const passed = score >= passingScore;
+
+    // Update assessment data
+    module.assessmentScore = score;
+    module.assessmentPassed = passed;
+    module.assessmentAttempts = (module.assessmentAttempts || 0) + 1;
+    module.lastAssessmentDate = new Date();
+
+    if (passed) {
+      // Mark module as completed only if passed
+      module.status = 'completed';
+      module.completedAt = new Date();
+
+      // Count completed modules
+      const completedCount = userProgress.modules.filter(
+        (m) => m.status === 'completed' && m.assessmentPassed,
+      ).length;
+      userProgress.completedModules = completedCount;
+
+      // Unlock next module
+      if (moduleIndex + 1 < userProgress.modules.length) {
+        userProgress.modules[moduleIndex + 1].status = 'in-progress';
+        userProgress.currentModuleId = moduleIndex + 2;
+      }
+
+      // Calculate average score across completed modules
+      const completedModulesWithScores = userProgress.modules.filter(
+        (m) => m.status === 'completed' && m.assessmentScore !== null,
+      );
+
+      if (completedModulesWithScores.length > 0) {
+        const totalScore = completedModulesWithScores.reduce(
+          (sum, m) => sum + m.assessmentScore,
+          0,
+        );
+        userProgress.averageScore = Math.round(
+          totalScore / completedModulesWithScores.length,
+        );
+      }
+
+      // Check if all 4 modules are completed and issue certificate
+      if (completedCount === 4) {
+        await this.issueCertificate(userId, userProgress);
+      }
+    }
+
+    // Update overall progress
+    const totalProgress = userProgress.modules.reduce(
+      (sum, m) => sum + m.progress,
+      0,
+    );
+    userProgress.overallProgress = Math.round(
+      totalProgress / userProgress.modules.length,
+    );
+
+    userProgress.lastAccessedAt = new Date();
+
+    await userProgress.save();
+    return userProgress.toObject();
+  }
+
+  // NEW: Issue certificate
+  private async issueCertificate(
+    userId: string,
+    userProgress: ProgressDocument,
+  ): Promise<void> {
+    if (userProgress.certificateEarned) {
+      return; // Certificate already issued
+    }
+
+    // Get user details
+    const user = await this.userModel.findById(userId).lean();
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    // Generate unique certificate ID
+    const certificateId = this.generateCertificateId();
+
+    // Update progress record with certificate info
+    userProgress.certificateEarned = true;
+    userProgress.certificateIssuedAt = new Date();
+    userProgress.certificateId = certificateId;
+  }
+
+  // NEW: Generate unique certificate ID
+  private generateCertificateId(): string {
+    const year = new Date().getFullYear();
+    const randomNum = Math.floor(Math.random() * 1000000)
+      .toString()
+      .padStart(6, '0');
+    return `KUJUA-${year}-${randomNum}`;
+  }
+
+  // NEW: Get certificate data
+  async getCertificate(userId: string): Promise<any> {
+    const progress = await this.progressModel.findOne({ userId }).lean();
+
+    if (!progress) {
+      throw new NotFoundException('Progress record not found');
+    }
+
+    if (!progress.certificateEarned) {
+      throw new NotFoundException(
+        'Certificate not available. Complete all 4 modules with 70% or above to earn your certificate.',
+      );
+    }
+
+    const user = await this.userModel
+      .findById(userId)
+      .select('-password')
+      .lean();
+
+    return {
+      certificateId: progress.certificateId,
+      userName: `${user.firstName} ${user.lastName}`,
+      userEmail: user.email,
+      finalScore: progress.averageScore,
+      issuedAt: progress.certificateIssuedAt,
+      moduleScores: progress.modules
+        .filter((m) => m.status === 'completed')
+        .map((m) => ({
+          moduleId: m.moduleId,
+          title: m.title,
+          score: m.assessmentScore,
+          completedAt: m.completedAt,
+        })),
+    };
   }
 
   async getProgress(userId: string): Promise<Progress> {
