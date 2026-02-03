@@ -47,6 +47,30 @@ export class User extends Document {
   @Prop()
   phoneNumber: number;
 
+  @Prop({ required: false })
+  region?: string;
+
+  @Prop({ required: false })
+  country?: string;
+
+  @Prop({ required: false })
+  city?: string;
+
+  @Prop({ required: false })
+  sector?: string;
+
+  @Prop({ required: false })
+  organisation?: string;
+
+  @Prop({ required: false })
+  gender?: string;
+
+  @Prop({ required: false })
+  ageRange?: string;
+
+  @Prop({ default: false })
+  receiveCommunications: boolean;
+
   @Prop({ type: Types.ObjectId, ref: 'User', index: true })
   createdBy?: Types.ObjectId;
 }

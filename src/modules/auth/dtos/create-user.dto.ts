@@ -7,6 +7,7 @@ import {
   IsOptional,
   ValidateNested,
   IsEnum,
+  IsBoolean,
 } from 'class-validator';
 
 export class CreateUser {
@@ -26,6 +27,30 @@ export class CreateUser {
   @IsString()
   @MinLength(6)
   password: string;
+
+  @IsString()
+  region?: string;
+
+  @IsString()
+  country?: string;
+
+  @IsString()
+  city?: string;
+
+  @IsString()
+  sector?: string;
+
+  @IsString()
+  organisation?: string;
+
+  @IsString()
+  gender?: string;
+
+  @IsString()
+  ageRange?: string;
+
+  @IsBoolean()
+  receiveCommunications?: boolean;
 }
 
 export class CreateOAuthUserDto {
@@ -46,7 +71,6 @@ export class CreateOAuthUserDto {
   @IsString()
   @MinLength(6)
   password?: string;
-
 }
 
 export class LoginDto {
