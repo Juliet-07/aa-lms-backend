@@ -22,7 +22,7 @@ export class ProgressService {
       title: 'Understanding the Foundations of PPR and CLM',
       description:
         'Introducing global and African PPR systems and CLM as a mechanism for accountability, justice, and participation',
-      parts: 17,
+      parts: 21,
     },
     {
       moduleId: 2,
