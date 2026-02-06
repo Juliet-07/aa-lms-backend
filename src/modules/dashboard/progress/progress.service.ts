@@ -29,7 +29,7 @@ export class ProgressService {
       title: 'The Principles and Practice of CLM',
       description:
         'Deep dive into community engagement methods, data collection, and accountability mechanisms',
-      parts: 4,
+      parts: 18,
     },
     {
       moduleId: 3,
