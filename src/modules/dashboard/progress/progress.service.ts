@@ -36,7 +36,7 @@ export class ProgressService {
       title: 'Integrating CLM into PPR Frameworks',
       description:
         'Practical frameworks and strategies for bringing communities and health systems together',
-      parts: 4,
+      parts: 18,
     },
     {
       moduleId: 4,
