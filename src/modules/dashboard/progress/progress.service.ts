@@ -19,7 +19,7 @@ export class ProgressService {
   private readonly moduleDefinitions = [
     {
       moduleId: 1,
-      title: 'Understanding the Foundations of PPR and CLM',
+      title: 'Understanding the Foundations of PPPR and CLM',
       description:
         'Introducing global and African PPR systems and CLM as a mechanism for accountability, justice, and participation',
       parts: 21,
@@ -29,14 +29,14 @@ export class ProgressService {
       title: 'The Principles and Practice of CLM',
       description:
         'Deep dive into community engagement methods, data collection, and accountability mechanisms',
-      parts: 21,
+      parts: 20,
     },
     {
       moduleId: 3,
-      title: 'Integrating CLM into PPR Frameworks',
+      title: 'Integrating CLM into PPPR Frameworks',
       description:
         'Practical frameworks and strategies for bringing communities and health systems together',
-      parts: 18,
+      parts: 16,
     },
     {
       moduleId: 4,
