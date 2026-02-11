@@ -6,6 +6,7 @@ import {
   Query,
   UseGuards,
   Param,
+  Req,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ReflectionService, SubmitReflectionDto } from './reflection.service';
@@ -30,6 +31,22 @@ export class ReflectionController {
   @Get('my-reflections')
   async getMyReflections(@CurrentUser() user: User) {
     return this.reflectionService.getUserReflections(user._id.toString());
+  }
+
+  @Get('by-segment')
+  async getReflectionBySegment(
+    @Req() req: any,
+    @Query('moduleId') moduleId: string,
+    @Query('segmentId') segmentId: string,
+  ) {
+    const userId = req.user._id;
+    const reflection = await this.reflectionService.getReflectionBySegment(
+      userId,
+      Number(moduleId),
+      Number(segmentId),
+    );
+
+    return reflection;
   }
 
   // Admin: Get all reflections with filters

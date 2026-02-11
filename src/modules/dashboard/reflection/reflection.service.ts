@@ -62,6 +62,20 @@ export class ReflectionService {
     return reflection.toObject();
   }
 
+  async getReflectionBySegment(
+    userId: string,
+    moduleId: number,
+    segmentId: number,
+  ): Promise<Reflection | null> {
+    const reflection = await this.reflectionModel.findOne({
+      userId,
+      moduleId,
+      segmentId,
+    });
+
+    return reflection;
+  }
+
   async getUserReflections(userId: string): Promise<Reflection[]> {
     return this.reflectionModel.find({ userId }).sort({ createdAt: -1 }).lean();
   }

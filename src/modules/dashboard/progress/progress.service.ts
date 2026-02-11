@@ -43,7 +43,7 @@ export class ProgressService {
       title: 'Action, Advocacy and Sustainability',
       description:
         'Building lasting change through strategic advocacy, policy influence, and institutional partnerships',
-      parts: 4,
+      parts: 14,
     },
   ];
 
