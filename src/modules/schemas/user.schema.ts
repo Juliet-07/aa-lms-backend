@@ -41,6 +41,9 @@ export class User extends Document {
   @Prop({ default: false })
   isOAuth: boolean;
 
+  @Prop({ type: String, enum: ['user', 'admin'], default: 'user' })
+  role: string;
+
   @Prop({ default: null })
   deletedAt: Date;
 

@@ -7,6 +7,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { AuthModule } from './modules/auth/auth.module';
 import { ProgressModule } from './modules/dashboard/progress/progress.module';
 import { ReflectionModule } from './modules/dashboard/reflection/reflection.module';
+import { AdminModule } from './modules/dashboard/admin/admin.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { ReflectionModule } from './modules/dashboard/reflection/reflection.modu
     AuthModule,
     ProgressModule,
     ReflectionModule,
+    AdminModule
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -18,6 +18,7 @@ import { Request, Response } from 'express';
 import { JwtService } from '@nestjs/jwt';
 import { LoggerService } from 'src/common/logger/logger.service';
 import { AuthGuard } from '@nestjs/passport';
+import { CreateAdmin } from './dtos/create-admin.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -66,6 +67,11 @@ export class AuthController {
   @Post('register')
   async registerUser(@Body() userDto: CreateUser) {
     return this.authService.registerUser(userDto);
+  }
+
+  @Post('register/admin')
+  async registerAdmin(@Body() adminDto: CreateAdmin) {
+    return this.authService.registerAdmin(adminDto);
   }
 
   @Post('signin')

@@ -12,6 +12,7 @@ import { User, UserDocument, Progress, ProgressDocument } from '../schemas';
 import { JwtService } from '@nestjs/jwt';
 import { LoggerService } from 'src/common/logger/logger.service';
 import { EmailService } from 'src/common/utils/mailing/email.service';
+import { CreateAdmin } from './dtos/create-admin.dto';
 
 @Injectable()
 export class AuthService {
@@ -82,6 +83,50 @@ export class AuthService {
     }
   }
 
+  async registerAdmin(createDto: CreateAdmin) {
+    const session: ClientSession = await this.userModel.db.startSession();
+
+    try {
+      const existing = await this.userModel.findOne({ email: createDto.email });
+      if (existing) {
+        throw new ConflictException('Email already in use');
+      }
+
+      let newAdmin;
+
+      await session.withTransaction(async () => {
+        const hashedPassword = await bcrypt.hash(createDto.password, 10);
+        newAdmin = new this.userModel({
+          ...createDto,
+          password: hashedPassword,
+          role: 'admin',
+          isOAuth: false,
+        });
+        await newAdmin.save({ session });
+      });
+
+      try {
+        await this.emailService.sendUserWelcomeEmail(
+          createDto.email,
+          createDto.firstName,
+        );
+        this.logger.log(`Welcome email sent to admin ${createDto.email}`);
+      } catch (emailError) {
+        this.logger.error(
+          `Failed to send welcome email to ${createDto.email}`,
+          emailError,
+        );
+      }
+
+      return newAdmin.toObject();
+    } catch (error) {
+      this.logger.error('Error registering admin', error);
+      throw error;
+    } finally {
+      await session.endSession();
+    }
+  }
+
   async login(credentials: { email: string; password: string }) {
     const user = await this.userModel
       .findOne({ email: credentials.email })
@@ -99,6 +144,7 @@ export class AuthService {
       lastName: user.lastName,
       phoneNumber: user.phoneNumber,
       createdBy: user.createdBy,
+      role: user.role,
     };
 
     return {
@@ -109,6 +155,7 @@ export class AuthService {
         firstName: user.firstName,
         lastName: user.lastName,
         createdBy: user.createdBy,
+        role: user.role,
       },
     };
   }
