@@ -162,7 +162,39 @@ export class AuthService {
     this.logger.log(`Email verified for user:${user.email}`);
     return { message: 'Email verified successfully. You can now log in' };
   }
-  
+
+  // async login(credentials: { email: string; password: string }) {
+  //   const user = await this.userModel
+  //     .findOne({ email: credentials.email })
+  //     .select('+password')
+  //     .lean();
+
+  //   if (!user || !(await bcrypt.compare(credentials.password, user.password))) {
+  //     throw new UnauthorizedException('Invalid credentials');
+  //   }
+
+  //   const payload = {
+  //     sub: user._id,
+  //     email: user.email,
+  //     firstName: user.firstName,
+  //     lastName: user.lastName,
+  //     phoneNumber: user.phoneNumber,
+  //     createdBy: user.createdBy,
+  //     role: user.role,
+  //   };
+
+  //   return {
+  //     access_token: this.jwtService.sign(payload),
+  //     user: {
+  //       _id: user._id,
+  //       email: user.email,
+  //       firstName: user.firstName,
+  //       lastName: user.lastName,
+  //       createdBy: user.createdBy,
+  //       role: user.role,
+  //     },
+  //   };
+  // }
   async login(credentials: { email: string; password: string }) {
     const user = await this.userModel
       .findOne({ email: credentials.email })
@@ -171,6 +203,13 @@ export class AuthService {
 
     if (!user || !(await bcrypt.compare(credentials.password, user.password))) {
       throw new UnauthorizedException('Invalid credentials');
+    }
+
+    // Block unverified non-admin users
+    if (user.role !== 'admin' && !user.isEmailVerified) {
+      throw new UnauthorizedException(
+        'Please verify your email address before logging in. Check your inbox for the verification link.',
+      );
     }
 
     const payload = {
