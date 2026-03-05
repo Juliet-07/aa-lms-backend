@@ -9,6 +9,8 @@ import {
   ProgressDocument,
   Reflection,
   ReflectionDocument,
+  Scenario,
+  ScenarioDocument,
 } from '../../schemas';
 import { LoggerService } from 'src/common/logger/logger.service';
 import { ModuleStatisticsService } from './services/module-statistics.service';
@@ -23,8 +25,11 @@ export class AdminService {
     private readonly progressModel: Model<ProgressDocument>,
     @InjectModel(Reflection.name)
     private readonly reflectionModel: Model<ReflectionDocument>,
+    @InjectModel(Scenario.name)
+    private readonly scenarioModel: Model<ScenarioDocument>,
     private readonly moduleStatsService: ModuleStatisticsService,
     private readonly userAnalyticsService: UserAnalyticsService,
+    // private rea
     private readonly logger: LoggerService,
   ) {
     this.logger.setContext(AdminService.name);
@@ -307,6 +312,82 @@ export class AdminService {
       }));
     } catch (error) {
       this.logger.error('Error exporting reflections', error);
+      throw error;
+    }
+  }
+
+  async getAllScenarios(
+    adminUserId: string,
+    filters?: {
+      moduleId?: number;
+      startDate?: Date;
+      endDate?: Date;
+    },
+  ) {
+    await this.verifyAdmin(adminUserId);
+
+    try {
+      const query: any = {};
+
+      if (filters?.moduleId) query.moduleId = filters.moduleId;
+
+      if (filters?.startDate || filters?.endDate) {
+        query.createdAt = {};
+        if (filters.startDate) query.createdAt.$gte = filters.startDate;
+        if (filters.endDate) query.createdAt.$lte = filters.endDate;
+      }
+
+      return await this.scenarioModel
+        .find(query)
+        .populate('userId', 'firstName lastName email')
+        .sort({ createdAt: -1 })
+        .lean();
+    } catch (error) {
+      this.logger.error('Error fetching all scenarios', error);
+      throw error;
+    }
+  }
+
+  async getScenarioStats(adminUserId: string) {
+    await this.verifyAdmin(adminUserId);
+
+    try {
+      const totalScenarios = await this.scenarioModel.countDocuments();
+      const uniqueUsers = await this.scenarioModel.distinct('userId');
+
+      const byModule = await this.scenarioModel.aggregate([
+        {
+          $group: {
+            _id: '$moduleId',
+            count: { $sum: 1 },
+            uniqueUsers: { $addToSet: '$userId' },
+          },
+        },
+        {
+          $project: {
+            moduleId: '$_id',
+            count: 1,
+            uniqueUsers: { $size: '$uniqueUsers' },
+          },
+        },
+        { $sort: { moduleId: 1 } },
+      ]);
+
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+      const recentScenarios = await this.scenarioModel.countDocuments({
+        createdAt: { $gte: thirtyDaysAgo },
+      });
+
+      return {
+        totalScenarios,
+        totalUsers: uniqueUsers.length,
+        recentScenarios,
+        byModule,
+      };
+    } catch (error) {
+      this.logger.error('Error fetching scenario stats', error);
       throw error;
     }
   }

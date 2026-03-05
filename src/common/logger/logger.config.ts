@@ -51,7 +51,7 @@ export const loggerConfig = (configService: ConfigService) => {
     exitOnError: false,
     transports: transportList,
     defaultMeta: {
-        service: 'skillseed-ai-backend',
+        service: 'aa-lms-backend',
         environment: nodeEnv,
     }
   }

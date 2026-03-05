@@ -8,6 +8,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { ProgressModule } from './modules/dashboard/progress/progress.module';
 import { ReflectionModule } from './modules/dashboard/reflection/reflection.module';
 import { AdminModule } from './modules/dashboard/admin/admin.module';
+import { ScenarioModule } from './modules/dashboard/scenario/scenario.module';
 
 @Module({
   imports: [
@@ -29,10 +30,11 @@ import { AdminModule } from './modules/dashboard/admin/admin.module';
       inject: [ConfigService],
     }),
     LoggerModule,
+    AdminModule,
     AuthModule,
     ProgressModule,
     ReflectionModule,
-    AdminModule
+    ScenarioModule,
   ],
   controllers: [AppController],
   providers: [AppService],

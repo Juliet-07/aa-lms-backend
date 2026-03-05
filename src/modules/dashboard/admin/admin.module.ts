@@ -11,8 +11,11 @@ import {
   ProgressSchema,
   Reflection,
   ReflectionSchema,
+  ScenarioSchema,
+  Scenario,
 } from '../../schemas';
 import { LoggerModule } from 'src/common/logger/logger.module';
+import { ScenarioService } from '../scenario/scenario.service';
 
 @Module({
   imports: [
@@ -20,11 +23,17 @@ import { LoggerModule } from 'src/common/logger/logger.module';
       { name: User.name, schema: UserSchema },
       { name: Progress.name, schema: ProgressSchema },
       { name: Reflection.name, schema: ReflectionSchema },
+      { name: Scenario.name, schema: ScenarioSchema },
     ]),
     LoggerModule,
   ],
   controllers: [AdminController],
-  providers: [AdminService, ModuleStatisticsService, UserAnalyticsService],
+  providers: [
+    AdminService,
+    ModuleStatisticsService,
+    UserAnalyticsService,
+    ScenarioService,
+  ],
   exports: [AdminService],
 })
 export class AdminModule {}

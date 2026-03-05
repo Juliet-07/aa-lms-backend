@@ -74,6 +74,15 @@ export class User extends Document {
   @Prop({ default: false })
   receiveCommunications: boolean;
 
+  @Prop({ default: false })
+  isEmailVerified: boolean;
+
+  @Prop({ type: String, default: null })
+  emailVerificationToken: string | null;
+
+  @Prop({ type: Date, default: null })
+  emailVerificationExpiry: Date | null;
+
   @Prop({ type: Types.ObjectId, ref: 'User', index: true })
   createdBy?: Types.ObjectId;
 }

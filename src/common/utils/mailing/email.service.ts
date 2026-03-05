@@ -48,44 +48,57 @@ export class EmailService {
     return result;
   }
 
-  // async sendUserWelcomeEmail(email: string, firstName: string) {
-  //   const mailOptions = {
-  //     from: process.env.MAIL_FROM,
-  //     to: email,
-  //     subject: 'Welcome to Kujua360',
-  //     html: `
-  //       <p>Hi ${firstName || 'there'},</p>
-  //       <p>Welcome! We're excited to have you on board.</p>
-  //       <p>Your account has been successfully created. You can now log in and start exploring all the features we have to offer.</p>
-  //       <p>If you have any questions or need assistance, feel free to reach out to our support team.</p>
-  //       <p>Best regards,<br>The AA Team</p>
-  //     `,
-  //   };
-
-  //   try {
-  //     const info = await this.transporter.sendMail(mailOptions);
-  //     console.log('✅ Email sent:', info.response);
-  //   } catch (error) {
-  //     console.error('❌ Failed to send email:', error);
-  //   }
-  // }
-
-  async sendUserWelcomeEmail(email: string, firstName: string) {
+  async sendUserWelcomeEmail(
+    email: string,
+    firstName: string,
+    verificationUrl: string | null = null,
+  ) {
     try {
-      // Load the template
       const template = this.loadTemplate('welcome');
 
-      // Replace variables
+      // Build the verification button block — or an empty string if not needed (e.g. OAuth)
+      const verificationBlock = verificationUrl
+        ? `
+          <tr>
+            <td style="padding: 0 40px 30px 40px; text-align: center;">
+              <p style="font-size: 15px; color: #555555; margin-bottom: 20px;">
+                To get started, please verify your email address by clicking the button below.
+                This link will expire in <strong>24 hours</strong>.
+              </p>
+              <a
+                href="${verificationUrl}"
+                style="
+                  display: inline-block;
+                  background-color: #d00000;
+                  color: #ffffff;
+                  font-size: 16px;
+                  font-weight: bold;
+                  text-decoration: none;
+                  padding: 14px 32px;
+                  border-radius: 6px;
+                "
+              >
+                Verify My Email
+              </a>
+              <p style="font-size: 13px; color: #999999; margin-top: 16px;">
+                If the button doesn't work, copy and paste this link into your browser:<br/>
+                <a href="${verificationUrl}" style="color: #d00000; word-break: break-all;">${verificationUrl}</a>
+              </p>
+            </td>
+          </tr>
+        `
+        : '';
+
       const htmlContent = this.replaceTemplateVariables(template, {
         USER_NAME: firstName || 'there',
         CURRENT_YEAR: new Date().getFullYear().toString(),
-        // APP_URL: process.env.APP_URL || 'https://yourapp.com',
+        VERIFICATION_BLOCK: verificationBlock,
       });
 
       const mailOptions = {
         from: process.env.MAIL_FROM,
         to: email,
-        subject: 'Welcome to Kujua360! 🎉',
+        subject: 'Welcome to Kujua360! Please verify your email ✉️',
         html: htmlContent,
       };
 

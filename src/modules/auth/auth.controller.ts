@@ -8,6 +8,7 @@ import {
   Post,
   UsePipes,
   HttpStatus,
+  Query,
 } from '@nestjs/common';
 import { CreateUser, LoginDto } from './dtos';
 import { AuthService } from './auth.service';
@@ -67,6 +68,19 @@ export class AuthController {
   @Post('register')
   async registerUser(@Body() userDto: CreateUser) {
     return this.authService.registerUser(userDto);
+  }
+
+  @Get('verify-email')
+  async verifyEmail(@Query('token') token: string, @Res() res: Response) {
+    try {
+      await this.authService.verifyEmail(token);
+
+      // Redirect to frontend login page with a success flag
+      return res.redirect(`${process.env.FRONTEND_URL}/login?verified=true`);
+    } catch (error) {
+      // Redirect to frontend with an error flag so the UI can show a message
+      return res.redirect(`${process.env.FRONTEND_URL}/login?verified=false`);
+    }
   }
 
   @Post('register/admin')

@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Welcome to Kujua360</title>
     <style>
-      /* Resets for Outlook and compatibility */
       body {
         margin: 0;
         padding: 0;
@@ -23,8 +22,6 @@
         text-decoration: none;
         -ms-interpolation-mode: bicubic;
       }
-
-      /* Mobile Responsiveness */
       @media screen and (max-width: 600px) {
         .container {
           width: 100% !important;
@@ -43,7 +40,7 @@
     "
   >
     <div style="display: none; max-height: 0px; overflow: hidden">
-      Welcome to Kujua360 - Start your learning journey today!
+      Welcome to Kujua360 - Please verify your email to get started!
     </div>
 
     <table
@@ -68,10 +65,12 @@
               box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
             "
           >
+            <!-- Top accent bar -->
             <tr>
               <td height="8" style="background-color: #d00000"></td>
             </tr>
 
+            <!-- Logo -->
             <tr>
               <td align="center" style="padding: 40px 0 20px 0">
                 <img
@@ -83,32 +82,41 @@
               </td>
             </tr>
 
+            <!-- Greeting & intro -->
             <tr>
               <td
                 class="content-padding"
-                style="padding: 0 40px 40px 40px; text-align: center"
+                style="padding: 0 40px 30px 40px; text-align: center"
               >
                 <h1
                   style="color: #333333; font-size: 24px; margin-bottom: 20px"
                 >
                   Welcome to Kujua360!
                 </h1>
-
                 <p
                   style="
                     font-size: 16px;
                     line-height: 24px;
                     color: #555555;
-                    margin-bottom: 30px;
+                    margin-bottom: 0;
                   "
                 >
                   Hi <strong>{{USER_NAME}}</strong>,<br /><br />
                   Thank you for joining Kujua360. We are excited to have you on
-                  board! Your account has been successfully created, and you can
-                  now log in to access your dashboard and start your learning
-                  journey.
+                  board! Your account has been successfully created.
                 </p>
+              </td>
+            </tr>
 
+            <!-- Verification button block (injected dynamically, empty string for OAuth) -->
+            {{VERIFICATION_BLOCK}}
+
+            <!-- Support contact -->
+            <tr>
+              <td
+                class="content-padding"
+                style="padding: 0 40px 40px 40px; text-align: center"
+              >
                 <p
                   style="
                     font-size: 16px;
@@ -136,7 +144,6 @@
                     moseskas@africanalliance.org.za
                   </a>
                 </p>
-
                 <p style="font-size: 16px; line-height: 24px; color: #555555">
                   Best regards,<br />
                   <strong>The Kujua360 Team</strong>
@@ -144,6 +151,7 @@
               </td>
             </tr>
 
+            <!-- Footer -->
             <tr>
               <td
                 style="
@@ -155,8 +163,8 @@
                 "
               >
                 <p style="margin: 0">
-                  &copy; {{CURRENT_YEAR}} Kujua360. All rights reserved.<br />Powered
-                  by African Alliance + COPPER
+                  &copy; {{CURRENT_YEAR}} Kujua360. All rights reserved.<br />
+                  Powered by African Alliance + COPPER
                 </p>
               </td>
             </tr>

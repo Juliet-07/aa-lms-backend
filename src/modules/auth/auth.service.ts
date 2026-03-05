@@ -7,6 +7,7 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import { ClientSession, Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
+import * as crypto from 'crypto';
 import { CreateUser } from './dtos';
 import { User, UserDocument, Progress, ProgressDocument } from '../schemas';
 import { JwtService } from '@nestjs/jwt';
@@ -27,13 +28,15 @@ export class AuthService {
   ) {
     this.logger.setContext(AuthService.name);
   }
+  private generateVerificationToken(): string {
+    return crypto.randomBytes(32).toString('hex');
+  }
 
   async registerUser(createDto: CreateUser, isOAuth = false) {
     const session: ClientSession = await this.userModel.db.startSession();
 
     let existing;
     let newUser;
-    let isNewUser = false;
 
     try {
       existing = await this.userModel.findOne({ email: createDto.email });
@@ -44,7 +47,13 @@ export class AuthService {
         throw new ConflictException('Email already in use');
       }
 
-      isNewUser = true;
+      const isEmailVerified = isOAuth;
+      const emailVerificationToken = isOAuth
+        ? null
+        : this.generateVerificationToken();
+      const emailVerificationExpiry = isOAuth
+        ? null
+        : new Date(Date.now() + 24 * 60 * 60 * 1000);
 
       await session.withTransaction(async () => {
         const hashedPassword = isOAuth
@@ -54,15 +63,22 @@ export class AuthService {
           ...createDto,
           password: hashedPassword,
           isOAuth,
+          isEmailVerified,
+          emailVerificationToken,
+          emailVerificationExpiry,
         });
         await newUser.save({ session });
       });
 
-      // if (!isOAuth) {
       try {
+        const verificationUrl = emailVerificationToken
+          ? `${process.env.APP_URL}/auth/verify-email?token=${emailVerificationToken}`
+          : null;
+
         await this.emailService.sendUserWelcomeEmail(
           createDto.email,
           createDto.firstName,
+          verificationUrl,
         );
         this.logger.log(`Welcome email sent to ${createDto.email}`);
       } catch (emailError) {
@@ -72,7 +88,6 @@ export class AuthService {
           emailError,
         );
       }
-      // }
 
       return newUser.toObject();
     } catch (error) {
@@ -127,6 +142,27 @@ export class AuthService {
     }
   }
 
+  async verifyEmail(token: string) {
+    const user = await this.userModel.findOne({
+      emailVerificationToken: token,
+      emailVerificationExpiry: { $gt: new Date() },
+    });
+
+    if (!user) {
+      throw new BadRequestException(
+        `Invalid or expired verification link. Please register again or contact support.`,
+      );
+    }
+
+    user.isEmailVerified = true;
+    user.emailVerificationToken = null;
+    user.emailVerificationExpiry = null;
+    await user.save();
+
+    this.logger.log(`Email verified for user:${user.email}`);
+    return { message: 'Email verified successfully. You can now log in' };
+  }
+  
   async login(credentials: { email: string; password: string }) {
     const user = await this.userModel
       .findOne({ email: credentials.email })

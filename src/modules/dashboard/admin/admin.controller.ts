@@ -1,4 +1,10 @@
-import { Controller, Get, ParseIntPipe, Query, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  ParseIntPipe,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { AdminService } from './admin.service';
 import { CurrentUser } from '../../../common/decorators';
@@ -110,5 +116,24 @@ export class AdminController {
       user._id.toString(),
       moduleId ? parseInt(moduleId) : undefined,
     );
+  }
+
+  @Get('scenarios')
+  async getAllScenarios(
+    @CurrentUser() user: User,
+    @Query('moduleId') moduleId?: string,
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
+  ) {
+    return this.adminService.getAllScenarios(user._id.toString(), {
+      moduleId: moduleId ? Number(moduleId) : undefined,
+      startDate: startDate ? new Date(startDate) : undefined,
+      endDate: endDate ? new Date(endDate) : undefined,
+    });
+  }
+
+  @Get('scenarios/stats')
+  async getScenarioStats(@CurrentUser() user: User) {
+    return this.adminService.getScenarioStats(user._id.toString());
   }
 }
