@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Scenario, ScenarioDocument } from '../../schemas';
+import { validateScenarioSubmission } from 'src/common/utils/response-validator.util';
 
 export interface SubmitScenarioDto {
   moduleId: number;
@@ -23,6 +24,17 @@ export class ScenarioService {
     userId: string,
     dto: SubmitScenarioDto,
   ): Promise<Scenario> {
+    // Validate using module+segment specific keyword config
+    const validation = validateScenarioSubmission(
+      dto.moduleId,
+      dto.segmentId,
+      dto.response,
+    );
+
+    if (!validation.valid) {
+      throw new BadRequestException(validation.reason);
+    }
+    
     const existing = await this.scenarioModel.findOne({
       userId,
       moduleId: dto.moduleId,

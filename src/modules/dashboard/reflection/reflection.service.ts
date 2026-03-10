@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import {
@@ -7,6 +11,7 @@ import {
   Reflection,
   ReflectionDocument,
 } from '../../schemas';
+import { validateReflectionSubmission } from 'src/common/utils/response-validator.util';
 
 export interface SubmitReflectionDto {
   moduleId: number;
@@ -32,6 +37,17 @@ export class ReflectionService {
     userId: string,
     dto: SubmitReflectionDto,
   ): Promise<Reflection> {
+    // Validate using module+segment+promptId specific keyword config
+    const validation = validateReflectionSubmission(
+      dto.moduleId,
+      dto.segmentId,
+      dto.responses,
+    );
+
+    if (!validation.valid) {
+      throw new BadRequestException(validation.reason);
+    }
+
     // Check if reflection already exists for this user/module/segment
     const existing = await this.reflectionModel.findOne({
       userId,
