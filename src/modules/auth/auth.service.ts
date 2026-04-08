@@ -8,12 +8,11 @@ import { InjectModel } from '@nestjs/mongoose';
 import { ClientSession, Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
-import { CreateUser } from './dtos';
+import { CreateUser, CreateAdmin } from './dtos';
 import { User, UserDocument, Progress, ProgressDocument } from '../schemas';
 import { JwtService } from '@nestjs/jwt';
 import { LoggerService } from 'src/common/logger/logger.service';
 import { EmailService } from 'src/common/utils/mailing/email.service';
-import { CreateAdmin } from './dtos/create-admin.dto';
 
 @Injectable()
 export class AuthService {

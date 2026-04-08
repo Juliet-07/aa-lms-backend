@@ -13,7 +13,9 @@ import { AuthGuard } from '@nestjs/passport';
 import { ProgressService } from './progress.service';
 import { CurrentUser } from '../../../common/decorators/current-user.decorator';
 import { User } from '../../schemas';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Learners - Progress Tracker')
 @Controller('progress')
 @UseGuards(AuthGuard('jwt'))
 export class ProgressController {
@@ -76,8 +78,7 @@ export class ProgressController {
       body.correctAnswers,
     );
   }
-
-  // NEW: Get certificate
+  
   @Get('certificate')
   async getCertificate(@CurrentUser() user: User) {
     return this.progressService.getCertificate(user._id.toString());

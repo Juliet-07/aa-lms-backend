@@ -6,11 +6,9 @@ import {
   Controller,
   Body,
   Post,
-  UsePipes,
-  HttpStatus,
   Query,
 } from '@nestjs/common';
-import { CreateUser, LoginDto } from './dtos';
+import { CreateUser, LoginDto, CreateAdmin } from './dtos';
 import { AuthService } from './auth.service';
 import { User } from '../schemas';
 import { CurrentUser } from '../../common/decorators';
@@ -19,8 +17,16 @@ import { Request, Response } from 'express';
 import { JwtService } from '@nestjs/jwt';
 import { LoggerService } from 'src/common/logger/logger.service';
 import { AuthGuard } from '@nestjs/passport';
-import { CreateAdmin } from './dtos/create-admin.dto';
+import {
+  ApiBearerAuth,
+  ApiExcludeEndpoint,
+  ApiOperation,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 
+@ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
   constructor(
@@ -30,12 +36,14 @@ export class AuthController {
   ) {}
 
   @Get('google')
+  @ApiExcludeEndpoint()
   @UseGuards(GoogleAuthGuard)
   async googleAuth(@Req() req: Request) {
     return { message: 'Redirecting to Google login......' };
   }
 
   @Get('google/callback')
+  @ApiExcludeEndpoint()
   @UseGuards(GoogleAuthGuard)
   async googleAuthCallback(
     @Req() req: Request,
@@ -66,11 +74,48 @@ export class AuthController {
   }
 
   @Post('register')
+  @ApiOperation({
+    summary: 'Register a new learner',
+    description:
+      'Creates a new user account and sends a welcome email containing an email-verification link. ' +
+      'The user cannot log in until they click that link.',
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'User created. Verification email sent.',
+  })
+  @ApiResponse({ status: 409, description: 'Email already in use.' })
   async registerUser(@Body() userDto: CreateUser) {
     return this.authService.registerUser(userDto);
   }
 
   @Get('verify-email')
+  @ApiExcludeEndpoint()
+  // @ApiOperation({
+  //   summary: "Verify a user's email address",
+  //   description:
+  //     'Called by the link inside the welcome email. ' +
+  //     'On success, redirects the browser to `/login?verified=true`. ' +
+  //     'On failure (token expired or invalid), redirects to `/login?verified=false`.\n\n' +
+  //     "> **Note:** This endpoint is visited directly by the user's browser — it is not a JSON API.",
+  // })
+  // @ApiQuery({
+  //   name: 'token',
+  //   required: true,
+  //   description:
+  //     'The 64-character hex token embedded in the verification email link.',
+  //   example: 'a3f9e2d1c4b5...',
+  // })
+  // @ApiResponse({
+  //   status: 302,
+  //   description:
+  //     'Redirects to frontend with ?verified=true or ?verified=false.',
+  // })
+  // @ApiResponse({
+  //   status: 400,
+  //   description:
+  //     'Invalid or expired token (only when called as JSON, not via browser).',
+  // })
   async verifyEmail(@Query('token') token: string, @Res() res: Response) {
     try {
       await this.authService.verifyEmail(token);
@@ -84,17 +129,67 @@ export class AuthController {
   }
 
   @Post('register/admin')
+  @ApiOperation({
+    summary: 'Register a new admin account',
+    description: 'Creates an admin user and sends a welcome email. ',
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Admin created successfully.',
+  })
+  @ApiResponse({ status: 409, description: 'Email already in use.' })
   async registerAdmin(@Body() adminDto: CreateAdmin) {
     return this.authService.registerAdmin(adminDto);
   }
 
   @Post('signin')
+  @ApiOperation({
+    summary: 'Log in',
+    description:
+      'Authenticates a user with email + password and returns a JWT access token. ' +
+      'Returns **401** if the email has not been verified (for learners).',
+  })
+  @ApiResponse({ status: 200, type: LoginDto })
+  @ApiResponse({
+    status: 401,
+    description: 'Invalid credentials or email not verified.',
+  })
   signin(@Body() body: LoginDto) {
     return this.authService.login(body);
   }
 
   @Get('profile')
   @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth('access-token')
+  @ApiOperation({
+    summary: 'Get current user profile',
+    description:
+      "Returns the authenticated user's profile including their course progress summary.",
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'User profile with progress summary.',
+    schema: {
+      example: {
+        _id: '64e1234abc',
+        firstName: 'Jane',
+        lastName: 'Doe',
+        email: 'jane@example.com',
+        role: 'user',
+        isEmailVerified: true,
+        hasStartedCourse: true,
+        progressSummary: {
+          overallProgress: 45,
+          completedModules: [1],
+          currentModuleId: 2,
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized — missing or invalid JWT.',
+  })
   async getProfile(@CurrentUser() user: User) {
     return this.authService.getProfile(user._id.toString());
   }
